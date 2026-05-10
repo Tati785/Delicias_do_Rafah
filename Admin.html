@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1C1007">
+<title>Painel Admin — Lanchonete</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pr:#C8371A;--pr-d:#9E2810;--pr-l:#f5ede9;
+  --ac:#F5A623;
+  --bg:#F4F2EE;--surface:#fff;--surface2:#FAFAF8;
+  --txt:#1C1007;--txt2:#5A3E2B;--txt3:#9A7A65;
+  --bdr:#E2D5C8;--bdr2:#C8B8A8;
+  --green:#2E7D32;--green-bg:#E8F5E9;
+  --blue:#1565C0;--blue-bg:#E3F2FD;
+  --orange:#E65100;--orange-bg:#FFF3E0;
+  --red:#B71C1C;--red-bg:#FFEBEE;
+  --sidebar:240px;--radius:14px;--radius-sm:10px;
+  --shadow:0 2px 16px rgba(28,16,7,.08);
+  --shadow-lg:0 8px 40px rgba(28,16,7,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+img{display:block;object-fit:cover}
+input,select,textarea,button{font-family:'DM Sans'}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh}
+.sidebar{
+  width:var(--sidebar);background:var(--txt);flex-shrink:0;
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.main{flex:1;overflow:auto;min-width:0}
+
+/* ── SIDEBAR ── */
+.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo h2{font-family:'Playfair Display';font-size:18px;color:#fff;line-height:1.2}
+.sidebar-logo p{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;text-transform:uppercase;letter-spacing:.8px}
+.sidebar-logo-img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.2);margin-bottom:10px;background:#333}
+.sidebar-logo-placeholder{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.sidebar-logo-placeholder svg{width:22px;height:22px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:1.8}
+
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;
+  color:rgba(255,255,255,.6);font-weight:600;font-size:14px;transition:all .2s;
+  border-left:3px solid transparent;
+}
+.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(200,55,26,.25);border-left-color:var(--pr)}
+.nav-section{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;padding:16px 20px 6px}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,.08)}
+.sidebar-footer a{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;text-decoration:none;transition:color .2s}
+.sidebar-footer a svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.sidebar-footer a:hover{color:#fff}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:sticky;top:0;z-index:50;background:var(--surface);
+  border-bottom:1px solid var(--bdr);padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.topbar h1{font-family:'Playfair Display';font-size:22px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.badge-dot{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:50px;font-size:12px;font-weight:700}
+.badge-dot.open{background:var(--green-bg);color:var(--green)}
+.badge-dot.closed{background:#ECEFF1;color:#546E7A}
+.badge-dot .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge-dot.open .dot{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-sm{padding:8px 16px;border-radius:50px;font-weight:700;font-size:13px;cursor:pointer;border:none;transition:all .2s}
+.btn-pr{background:var(--pr);color:#fff}
+.btn-pr:hover{background:var(--pr-d)}
+.btn-ghost{background:var(--surface);color:var(--pr);border:1.5px solid var(--pr)}
+.btn-ghost:hover{background:var(--pr-l)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1.5px solid #FFCDD2}
+.btn-danger:hover{background:#FFCDD2}
+
+/* ── SECTIONS ── */
+.section{display:none;padding:28px}
+.section.active{display:block}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--bdr);padding:20px;box-shadow:var(--shadow)}
+.stat-card .num{font-family:'Playfair Display';font-size:32px;font-weight:900;color:var(--pr);line-height:1}
+.stat-card .num.green{color:var(--green)}
+.stat-card .num.orange{color:var(--orange)}
+.stat-card .lbl{font-size:12px;font-weight:600;color:var(--txt3);margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-card .sub{font-size:13px;color:var(--txt2);margin-top:4px;font-weight:600}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--bdr);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-weight:700;font-size:15px}
+.card-body{padding:20px}
+
+/* ── ORDER CARDS ── */
+.order-row{
+  background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--bdr);
+  padding:16px;margin-bottom:12px;transition:box-shadow .2s;
+}
+.order-row:hover{box-shadow:var(--shadow)}
+.order-row-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:12px}
+.order-id{font-weight:800;font-size:15px}
+.order-customer{font-size:13px;color:var(--txt2);margin-top:2px}
+.order-time{font-size:11px;color:var(--txt3);margin-top:2px}
+.order-row-items{font-size:13px;color:var(--txt2);margin-bottom:10px;line-height:1.6}
+.order-row-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.order-total-lbl{font-weight:800;font-size:16px;font-family:'Playfair Display'}
+.order-meta-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700}
+.tag-blue{background:var(--blue-bg);color:var(--blue)}
+.tag-green{background:var(--green-bg);color:var(--green)}
+.tag-orange{background:var(--orange-bg);color:var(--orange)}
+.tag-gray{background:#ECEFF1;color:#546E7A}
+
+.status-select{
+  padding:6px 12px;border-radius:50px;font-family:'DM Sans';font-weight:700;font-size:12px;
+  border:1.5px solid var(--bdr2);cursor:pointer;background:var(--surface);color:var(--txt);transition:all .2s;
+}
+.order-obs{font-size:12px;color:var(--txt3);margin-bottom:8px;background:var(--bg);padding:8px 10px;border-radius:8px}
+.order-addr{font-size:12px;color:var(--txt2);margin-bottom:8px}
+
+/* ── PRODUCT ADMIN ── */
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.prod-admin-card{
+  background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--bdr);
+  overflow:hidden;box-shadow:var(--shadow);
+}
+.prod-admin-img{height:120px;background:var(--bg);position:relative}
+.prod-admin-img img{width:100%;height:100%;object-fit:cover}
+.prod-admin-img .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.prod-admin-img .no-img svg{width:36px;height:36px;stroke:var(--bdr2);fill:none;stroke-width:1.5}
+.prod-admin-badge{position:absolute;top:8px;right:8px;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700}
+.prod-admin-body{padding:12px}
+.prod-admin-name{font-weight:700;font-size:14px}
+.prod-admin-cat{font-size:11px;color:var(--txt3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.prod-admin-price{font-family:'Playfair Display';font-size:17px;color:var(--pr);margin-top:6px;font-weight:700}
+.prod-admin-actions{display:flex;gap:6px;margin-top:10px}
+.icon-btn{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--bdr);background:var(--surface);color:var(--txt2);transition:all .2s;display:flex;align-items:center;gap:4px}
+.icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.icon-btn:hover{background:var(--bg)}
+.icon-btn.edit:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.icon-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.icon-btn.toggle:hover{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:12px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.4px}
+.form-input{
+  width:100%;background:var(--bg);border:1.5px solid var(--bdr);border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:14px;color:var(--txt);transition:border-color .2s;outline:none;
+}
+.form-input:focus{border-color:var(--pr);background:var(--surface)}
+textarea.form-input{resize:vertical;min-height:70px}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239A7A65' fill='none' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+
+/* ── IMAGE UPLOAD ── */
+.img-upload-area{
+  border:2px dashed var(--bdr2);border-radius:var(--radius-sm);background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;cursor:pointer;transition:all .2s;padding:20px;text-align:center;position:relative;overflow:hidden;
+  min-height:160px;
+}
+.img-upload-area:hover{border-color:var(--pr);background:var(--pr-l)}
+.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-area svg{width:36px;height:36px;stroke:var(--bdr2);fill:none;stroke-width:1.5}
+.img-upload-area p{font-size:13px;color:var(--txt3);font-weight:600}
+.img-upload-area .img-preview{position:absolute;inset:0;object-fit:cover;width:100%;height:100%}
+.img-upload-area .img-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.img-upload-area:hover .img-overlay{opacity:1}
+.img-upload-area .img-overlay span{color:#fff;font-size:13px;font-weight:700}
+
+/* ── REGION TABLE ── */
+.region-row{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  border-bottom:1px solid var(--bdr);background:var(--surface);transition:background .15s;
+}
+.region-row:last-child{border-bottom:none}
+.region-row:hover{background:var(--surface2)}
+.region-name{font-weight:600;font-size:14px;flex:1}
+.region-frete{font-weight:700;font-size:14px;color:var(--pr);min-width:80px}
+
+/* ── SCHEDULE TABLE ── */
+.schedule-row{display:grid;grid-template-columns:100px 1fr 1fr 60px;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.schedule-row:last-child{border-bottom:none}
+.schedule-day{font-weight:700;font-size:13px;color:var(--txt2)}
+.schedule-toggle{display:flex;align-items:center;gap:6px;cursor:pointer}
+.toggle-switch{width:36px;height:20px;border-radius:50px;background:var(--bdr2);position:relative;transition:background .2s;flex-shrink:0}
+.toggle-switch.on{background:var(--green)}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle-switch.on::after{transform:translateX(16px)}
+
+/* ── CONFIG ── */
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.config-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--bdr);padding:20px;box-shadow:var(--shadow)}
+.config-card h3{font-weight:700;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.config-card h3 svg{width:18px;height:18px;stroke:var(--pr);fill:none;stroke-width:2}
+.config-card.full{grid-column:1/-1}
+
+/* ── ALERT ── */
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;margin-bottom:12px}
+.alert-ok{background:var(--green-bg);color:var(--green);border:1px solid #A5D6A7}
+.alert-err{background:var(--red-bg);color:var(--red);border:1px solid #FFCDD2}
+.alert-info{background:var(--blue-bg);color:var(--blue);border:1px solid #90CAF9}
+
+/* ── LOGIN WALL ── */
+.login-wall{
+  position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;
+}
+.login-box{background:var(--surface);border-radius:var(--radius);border:1px solid var(--bdr);padding:40px;width:100%;max-width:380px;box-shadow:var(--shadow-lg);text-align:center}
+.login-box .lock-icon{width:64px;height:64px;border-radius:50%;background:var(--pr-l);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.login-box .lock-icon svg{width:30px;height:30px;stroke:var(--pr);fill:none;stroke-width:2}
+.login-box h2{font-family:'Playfair Display';font-size:26px;margin-bottom:6px}
+.login-box p{color:var(--txt3);font-size:14px;margin-bottom:24px}
+.login-box .form-input{text-align:left}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--surface);border-radius:var(--radius);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-header h3{font-family:'Playfair Display';font-size:20px;font-weight:700}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--txt3);display:flex;padding:4px}
+.modal-close svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--bdr);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--surface)}
+
+/* ── MISC ── */
+.hidden{display:none!important}
+.empty-state{text-align:center;padding:60px 20px;color:var(--txt3)}
+.empty-state svg{width:60px;height:60px;stroke:var(--bdr2);fill:none;stroke-width:1.5;margin:0 auto 16px;display:block}
+.empty-state h3{font-family:'Playfair Display';font-size:20px;color:var(--txt2);margin-bottom:6px}
+.divider{height:1px;background:var(--bdr);margin:20px 0}
+.flex{display:flex}
+.gap-10{gap:10px}
+.items-center{align-items:center}
+.justify-between{justify-content:space-between}
+.mt-16{margin-top:16px}
+
+/* ── MOBILE TOPBAR ── */
+.mobile-topbar{display:none;position:sticky;top:0;z-index:100;background:var(--txt);padding:12px 16px;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.mobile-topbar h2{font-family:'Playfair Display';font-size:16px;color:#fff;flex:1}
+.mobile-menu-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);padding:4px}
+.mobile-menu-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200}
+
+@media(max-width:900px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .prod-grid{grid-template-columns:1fr}
+  .config-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .form-group.full{grid-column:auto}
+}
+@media(max-width:700px){
+  .layout{flex-direction:column}
+  .sidebar{width:260px;position:fixed;top:0;left:-260px;height:100vh;z-index:300;transition:left .3s}
+  .sidebar.open{left:0}
+  .sidebar-overlay.show{display:block}
+  .main{width:100%}
+  .mobile-topbar{display:flex}
+  .section{padding:16px}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN WALL ══ -->
+<div class="login-wall" id="loginWall">
+  <div class="login-box">
+    <div class="lock-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+    <h2>Painel Admin</h2>
+    <p>Acesso exclusivo para o proprietário</p>
+    <div id="loginAlert"></div>
+    <input class="form-input" id="passInput" type="password" placeholder="Senha do administrador" style="margin-bottom:14px" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    <button class="btn-sm btn-pr" style="width:100%;padding:12px;font-size:15px" onclick="doAdminLogin()">Entrar no Painel</button>
+  </div>
+</div>
+
+<!-- ══ MOBILE TOPBAR ══ -->
+<div class="mobile-topbar" id="mobileTopbar">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <h2 id="mobileTitle">Painel Admin</h2>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ══ MAIN LAYOUT ══ -->
+<div class="layout" id="appLayout" style="display:none">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img class="sidebar-logo-img" id="sidebarLogoImg" src="" alt="" style="display:none" onerror="this.style.display='none'">
+      <div class="sidebar-logo-placeholder" id="sidebarLogoPlaceholder">
+        <svg viewBox="0 0 24 24"><path d="M3 11h18M3 11c0-2.2 1.6-4 3.5-4h11c1.9 0 3.5 1.8 3.5 4M3 11l1.5 6h15L21 11"/></svg>
+      </div>
+      <h2 id="sidebarNome">Lanchonete</h2>
+      <p>Painel Administrativo</p>
+    </div>
+
+    <div class="nav-section">Operação</div>
+    <div class="nav-item active" onclick="showSection('pedidos')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+      Pedidos
+    </div>
+    <div class="nav-item" onclick="showSection('resumo')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Resumo
+    </div>
+
+    <div class="nav-section">Cardápio</div>
+    <div class="nav-item" onclick="showSection('produtos')">
+      <svg viewBox="0 0 24 24"><path d="M3 11h18M3 11c0-2.2 1.6-4 3.5-4h11c1.9 0 3.5 1.8 3.5 4M3 11l1.5 6h15L21 11"/></svg>
+      Produtos
+    </div>
+    <div class="nav-item" onclick="showSection('regioes')">
+      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Regiões de Entrega
+    </div>
+
+    <div class="nav-section">Configurações</div>
+    <div class="nav-item" onclick="showSection('config')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Configurações
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Ver site do cliente
+      </a>
+      <div style="margin-top:12px">
+        <button class="btn-sm btn-ghost" style="width:100%;font-size:12px" onclick="doLogout()">Sair</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- ── TOPBAR ── -->
+    <div class="topbar">
+      <h1 id="sectionTitle">Pedidos</h1>
+      <div class="topbar-right">
+        <div class="badge-dot" id="statusBadge"><div class="dot"></div><span id="statusTxt">—</span></div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION: PEDIDOS ══ -->
+    <div class="section active" id="sec-pedidos">
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn-sm btn-pr" id="filterAll" onclick="filterOrders('all')">Todos</button>
+        <button class="btn-sm btn-ghost" id="filterPendente" onclick="filterOrders('pendente')">Pendentes</button>
+        <button class="btn-sm btn-ghost" id="filterPreparando" onclick="filterOrders('preparando')">Preparando</button>
+        <button class="btn-sm btn-ghost" id="filterPronto" onclick="filterOrders('pronto')">Prontos</button>
+        <button class="btn-sm btn-ghost" id="filterEntregue" onclick="filterOrders('entregue')">Entregues</button>
+      </div>
+      <div id="ordersContainer"></div>
+    </div>
+
+    <!-- ══ SECTION: RESUMO ══ -->
+    <div class="section" id="sec-resumo">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="card">
+        <div class="card-header"><h3>Pedidos desta semana</h3></div>
+        <div class="card-body" id="weekOrdersBody"></div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION: PRODUTOS ══ -->
+    <div class="section" id="sec-produtos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <p style="color:var(--txt3);font-size:14px" id="prodCountLbl"></p>
+        <button class="btn-sm btn-pr" onclick="openProdModal()">+ Novo Produto</button>
+      </div>
+      <div class="prod-grid" id="prodGrid"></div>
+    </div>
+
+    <!-- ══ SECTION: REGIÕES ══ -->
+    <div class="section" id="sec-regioes">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <h3>Regiões de Entrega</h3>
+          <button class="btn-sm btn-pr" onclick="openRegionModal()">+ Nova Região</button>
+        </div>
+        <div id="regionsBody"></div>
+      </div>
+      <div class="alert alert-info">
+        O cliente seleciona a região no momento do pedido. O frete é calculado automaticamente por região.
+      </div>
+    </div>
+
+    <!-- ══ SECTION: CONFIG ══ -->
+    <div class="section" id="sec-config">
+      <div class="config-grid">
+        <!-- Identidade -->
+        <div class="config-card">
+          <h3><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Identidade</h3>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="form-group">
+              <label class="form-label">Nome da lanchonete</label>
+              <input class="form-input" id="cfgNome" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Slogan</label>
+              <input class="form-input" id="cfgSlogan" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Endereço</label>
+              <input class="form-input" id="cfgEndereco" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp</label>
+              <input class="form-input" id="cfgWhats" type="text">
+            </div>
+          </div>
+        </div>
+
+        <!-- Imagens -->
+        <div class="config-card">
+          <h3><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Imagens</h3>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-group">
+              <label class="form-label">Logo (foto de perfil)</label>
+              <div class="img-upload-area" id="logoUploadArea" onclick="document.getElementById('logoFileInput').click()">
+                <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+                <img class="img-preview hidden" id="logoPreview" alt="">
+                <div class="img-overlay"><span>Trocar foto</span></div>
+                <svg viewBox="0 0 24 24" id="logoIcon"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <p id="logoPrompt">Clique para enviar logo</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Capa (foto de fundo)</label>
+              <div class="img-upload-area" id="coverUploadArea" onclick="document.getElementById('coverFileInput').click()">
+                <input type="file" id="coverFileInput" accept="image/*" style="display:none" onchange="handleCoverUpload(event)">
+                <img class="img-preview hidden" id="coverPreview" alt="">
+                <div class="img-overlay"><span>Trocar capa</span></div>
+                <svg viewBox="0 0 24 24" id="coverIcon"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="21 15 16 10 5 21"/></svg>
+                <p id="coverPrompt">Clique para enviar capa</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horários -->
+        <div class="config-card full">
+          <h3><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Horários de Funcionamento</h3>
+          <div id="scheduleRows" style="margin-bottom:16px"></div>
+          <div class="divider"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group">
+              <label class="form-label">Texto Seg-Sex</label>
+              <input class="form-input" id="cfgHorSemana" placeholder="Ex: 10h às 22h">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Texto Sábado</label>
+              <input class="form-input" id="cfgHorSab" placeholder="Ex: 10h às 23h">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Texto Domingo</label>
+              <input class="form-input" id="cfgHorDom" placeholder="Ex: Fechado">
+            </div>
+          </div>
+        </div>
+
+        <!-- Entrega -->
+        <div class="config-card">
+          <h3><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Entrega</h3>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="form-group">
+              <label class="form-label">Realizar entregas?</label>
+              <div style="display:flex;gap:8px">
+                <button class="btn-sm" id="btnDelivOn" onclick="setCfgDelivery(true)" style="flex:1">Sim</button>
+                <button class="btn-sm" id="btnDelivOff" onclick="setCfgDelivery(false)" style="flex:1">Não (só retirada)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagamentos -->
+        <div class="config-card">
+          <h3><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Formas de Pagamento</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600">
+              <input type="checkbox" id="payDinheiro" style="width:18px;height:18px;accent-color:var(--pr)"> Dinheiro
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600">
+              <input type="checkbox" id="payPix" style="width:18px;height:18px;accent-color:var(--pr)"> PIX
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600">
+              <input type="checkbox" id="payCartao" style="width:18px;height:18px;accent-color:var(--pr)"> Cartão
+            </label>
+          </div>
+        </div>
+
+        <!-- Senha -->
+        <div class="config-card">
+          <h3><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Segurança</h3>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="form-group">
+              <label class="form-label">Nova senha admin</label>
+              <input class="form-input" id="cfgNovaSenha" type="password" placeholder="Deixe em branco para não alterar">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmar senha</label>
+              <input class="form-input" id="cfgConfSenha" type="password" placeholder="Repita a senha">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cfgAlert" style="margin-top:16px"></div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn-sm btn-pr" style="padding:12px 28px;font-size:15px" onclick="saveAllConfig()">Salvar tudo</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══ MODAL: PRODUTO ══ -->
+<div class="modal-bg hidden" id="prodModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="prodModalTitle">Novo Produto</h3>
+      <button class="modal-close" onclick="closeProdModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px">
+        <div class="form-label" style="margin-bottom:6px">Foto do produto</div>
+        <div class="img-upload-area" style="min-height:180px" onclick="document.getElementById('prodImgInput').click()">
+          <input type="file" id="prodImgInput" accept="image/*" style="display:none" onchange="handleProdImgUpload(event)">
+          <img class="img-preview hidden" id="prodImgPreview" alt="">
+          <div class="img-overlay"><span>Trocar foto</span></div>
+          <svg viewBox="0 0 24 24" id="prodImgIcon"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <p id="prodImgPrompt">Clique para enviar foto</p>
+        </div>
+        <div id="prodImgAlert" style="margin-top:8px"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Nome do produto *</label>
+          <input class="form-input" id="prodName" type="text" placeholder="Ex: X-Burguer Clássico">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Descrição</label>
+          <textarea class="form-input" id="prodDesc" placeholder="Ingredientes ou descrição breve..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preço (R$) *</label>
+          <input class="form-input" id="prodPrice" type="number" step="0.01" min="0" placeholder="0,00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoria *</label>
+          <input class="form-input" id="prodCat" type="text" placeholder="Ex: Lanches, Bebidas...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Disponível</label>
+          <select class="form-input" id="prodAtivo">
+            <option value="true">Sim — visível no cardápio</option>
+            <option value="false">Não — oculto no cardápio</option>
+          </select>
+        </div>
+      </div>
+      <input type="hidden" id="prodEditId">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-ghost" onclick="closeProdModal()">Cancelar</button>
+      <button class="btn-sm btn-pr" onclick="saveProd()">Salvar produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: REGIÃO ══ -->
+<div class="modal-bg hidden" id="regionModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h3 id="regionModalTitle">Nova Região</h3>
+      <button class="modal-close" onclick="closeRegionModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Nome da região / bairro *</label>
+          <input class="form-input" id="regName" type="text" placeholder="Ex: Centro, Bairro Novo...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Taxa de entrega (R$)</label>
+          <input class="form-input" id="regFrete" type="number" step="0.50" min="0" placeholder="0,00 para entrega grátis">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Disponível para entrega</label>
+          <select class="form-input" id="regAtivo">
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+      </div>
+      <input type="hidden" id="regEditId">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-ghost" onclick="closeRegionModal()">Cancelar</button>
+      <button class="btn-sm btn-pr" onclick="saveRegion()">Salvar região</button>
+    </div>
+  </div>
+</div>
+
+<script src="dados.js"></script>
+<script>
+// ══ STATE ══
+let currentSection = 'pedidos';
+let currentOrderFilter = 'all';
+let currentDelivery = true;
+let scheduleState = {};
+const DAYS = ['seg','ter','qua','qui','sex','sab','dom'];
+const DAYNAMES = { seg:'Segunda',ter:'Terça',qua:'Quarta',qui:'Quinta',sex:'Sexta',sab:'Sábado',dom:'Domingo' };
+
+// ══ AUTH ══
+function doAdminLogin() {
+  const pass = document.getElementById('passInput').value;
+  const cfg = DB.getConfig();
+  if (pass === (cfg.adminPass || 'admin123')) {
+    document.getElementById('loginWall').style.display = 'none';
+    document.getElementById('appLayout').style.display = 'flex';
+    initAdmin();
+  } else {
+    document.getElementById('loginAlert').innerHTML = '<div class="alert alert-err">Senha incorreta.</div>';
+    document.getElementById('passInput').value = '';
+    document.getElementById('passInput').focus();
+  }
+}
+function doLogout() { location.reload(); }
+document.getElementById('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') doAdminLogin(); });
+
+// ══ INIT ══
+function initAdmin() {
+  updateStatusBadge();
+  setInterval(updateStatusBadge, 60000);
+  showSection('pedidos');
+  loadSidebarLogo();
+}
+
+function updateStatusBadge() {
+  const open = Utils.isOpen();
+  const badge = document.getElementById('statusBadge');
+  const txt = document.getElementById('statusTxt');
+  badge.className = 'badge-dot ' + (open ? 'open' : 'closed');
+  txt.textContent = open ? 'Aberto agora' : 'Fechado';
+}
+
+function loadSidebarLogo() {
+  const cfg = DB.getConfig();
+  document.getElementById('sidebarNome').textContent = cfg.nome || 'Lanchonete';
+  const img = document.getElementById('sidebarLogoImg');
+  const ph = document.getElementById('sidebarLogoPlaceholder');
+  if (cfg.logoData) { img.src = cfg.logoData; img.style.display = 'block'; ph.style.display = 'none'; }
+  else { img.style.display = 'none'; ph.style.display = 'flex'; }
+}
+
+// ══ SIDEBAR ══
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => { if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(id)) n.classList.add('active'); });
+  currentSection = id;
+  const titles = { pedidos:'Pedidos', resumo:'Resumo da Semana', produtos:'Gerenciar Cardápio', regioes:'Regiões de Entrega', config:'Configurações' };
+  document.getElementById('sectionTitle').textContent = titles[id] || id;
+  document.getElementById('mobileTitle').textContent = titles[id] || id;
+  const renders = { pedidos: renderOrders, resumo: renderResumo, produtos: renderProds, regioes: renderRegions, config: renderConfig };
+  if (renders[id]) renders[id]();
+  if (window.innerWidth <= 700) closeSidebar();
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ══ ORDERS ══
+function renderOrders() {
+  const orders = DB.getOrders().sort((a, b) => b.ts - a.ts);
+  const filtered = currentOrderFilter === 'all' ? orders : orders.filter(o => o.status === currentOrderFilter);
+  const el = document.getElementById('ordersContainer');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h3>Nenhum pedido</h3><p>Os pedidos aparecerão aqui quando chegarem</p></div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(o => `<div class="order-row">
+    <div class="order-row-top">
+      <div>
+        <div class="order-id">#${o.id}</div>
+        <div class="order-customer">${o.userName} · ${o.userId}</div>
+        <div class="order-time">${Utils.date(o.ts)} · ${Utils.timeAgo(o.ts)}</div>
+      </div>
+      <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
+        ${['pendente','confirmado','preparando','pronto','saiu','entregue','cancelado'].map(s =>
+          `<option value="${s}" ${o.status===s?'selected':''}>${Utils.statusLabel(s)}</option>`
+        ).join('')}
+      </select>
+    </div>
+    <div class="order-row-items">${o.items.map(i => `${i.name} × ${i.qty}`).join(' · ')}</div>
+    ${o.obs ? `<div class="order-obs">📝 ${o.obs}</div>` : ''}
+    ${o.address ? `<div class="order-addr">📍 ${o.region?o.region.name+' — ':''} ${o.address.street}${o.address.ref?' ('+o.address.ref+')':''}</div>` : ''}
+    <div class="order-row-foot">
+      <div class="order-total-lbl" style="color:var(--pr)">${Utils.money(o.total)}</div>
+      <div class="order-meta-tags">
+        <span class="tag ${o.deliveryType==='entrega'?'tag-blue':'tag-gray'}">${Utils.typeLabel(o.deliveryType)}</span>
+        <span class="tag tag-orange">${Utils.payLabel(o.payMethod)}${o.troco?' · troco p/ R$'+o.troco:''}</span>
+        <span class="tag" style="background:${Utils.statusBg(o.status)};color:${Utils.statusColor(o.status)}">${Utils.statusLabel(o.status)}</span>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+function filterOrders(filter) {
+  currentOrderFilter = filter;
+  document.querySelectorAll('[id^="filter"]').forEach(b => { b.className = 'btn-sm btn-ghost'; });
+  document.getElementById('filter' + (filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1))).className = 'btn-sm btn-pr';
+  renderOrders();
+}
+
+function updateStatus(id, status) {
+  const orders = DB.getOrders();
+  const o = orders.find(x => x.id === id);
+  if (o) { o.status = status; DB.saveOrders(orders); }
+}
+
+// ══ RESUMO ══
+function renderResumo() {
+  const orders = DB.getOrders();
+  const now = Date.now();
+  const weekAgo = now - 7 * 86400000;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const weekOrders = orders.filter(o => o.ts >= weekAgo && o.status !== 'cancelado');
+  const todayOrders = orders.filter(o => o.ts >= todayStart.getTime() && o.status !== 'cancelado');
+  const totalSemana = weekOrders.reduce((s, o) => s + o.total, 0);
+  const totalHoje = todayOrders.reduce((s, o) => s + o.total, 0);
+  const pending = orders.filter(o => o.status === 'pendente').length;
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><div class="num">${weekOrders.length}</div><div class="lbl">Pedidos na semana</div></div>
+    <div class="stat-card"><div class="num green" style="font-size:22px">${Utils.money(totalSemana)}</div><div class="lbl">Faturamento semana</div></div>
+    <div class="stat-card"><div class="num">${todayOrders.length}</div><div class="lbl">Pedidos hoje</div><div class="sub">${Utils.money(totalHoje)}</div></div>
+    <div class="stat-card"><div class="num orange">${pending}</div><div class="lbl">Pendentes agora</div></div>
+  `;
+  const el = document.getElementById('weekOrdersBody');
+  const recent = weekOrders.sort((a, b) => b.ts - a.ts).slice(0, 30);
+  el.innerHTML = recent.length ? recent.map(o => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+    <div><strong>#${o.id}</strong> — ${o.userName}<div style="color:var(--txt3);font-size:11px;margin-top:2px">${Utils.date(o.ts)}</div></div>
+    <div style="text-align:right"><strong style="color:var(--pr)">${Utils.money(o.total)}</strong><div><span class="tag" style="background:${Utils.statusBg(o.status)};color:${Utils.statusColor(o.status)};font-size:10px">${Utils.statusLabel(o.status)}</span></div></div>
+  </div>`).join('') : '<p style="color:var(--txt3);text-align:center;padding:20px">Nenhum pedido nesta semana.</p>';
+}
+
+// ══ PRODUTOS ══
+function renderProds() {
+  const prods = DB.getProducts();
+  document.getElementById('prodCountLbl').textContent = prods.length + ' produto(s) cadastrado(s)';
+  const el = document.getElementById('prodGrid');
+  el.innerHTML = prods.map(p => `<div class="prod-admin-card">
+    <div class="prod-admin-img">
+      ${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=prod-admin-img><div class=no-img><svg viewBox=\\'0 0 24 24\\'><rect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'2\\'/><circle cx=\\'8.5\\' cy=\\'8.5\\' r=\\'1.5\\'/><polyline points=\\'21 15 16 10 5 21\\'/></svg></div></div>'">` : '<div class="no-img"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>'}
+      <span class="prod-admin-badge" style="background:${p.ativo?'var(--green-bg)':'var(--red-bg)'};color:${p.ativo?'var(--green)':'var(--red)'}">${p.ativo?'Ativo':'Oculto'}</span>
+    </div>
+    <div class="prod-admin-body">
+      <div class="prod-admin-name">${p.name}</div>
+      <div class="prod-admin-cat">${p.category||'—'}</div>
+      <div class="prod-admin-price">${Utils.money(p.price)}</div>
+      <div class="prod-admin-actions">
+        <button class="icon-btn edit" onclick="openProdModal('${p.id}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
+        <button class="icon-btn toggle" onclick="toggleProd('${p.id}')">${p.ativo?'Ocultar':'Ativar'}</button>
+        <button class="icon-btn del" onclick="deleteProd('${p.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+let prodImgData = null;
+function openProdModal(id) {
+  prodImgData = null;
+  const modal = document.getElementById('prodModal');
+  modal.classList.remove('hidden');
+  if (id) {
+    const p = DB.getProducts().find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('prodModalTitle').textContent = 'Editar Produto';
+    document.getElementById('prodEditId').value = id;
+    document.getElementById('prodName').value = p.name;
+    document.getElementById('prodDesc').value = p.desc || '';
+    document.getElementById('prodPrice').value = p.price;
+    document.getElementById('prodCat').value = p.category || '';
+    document.getElementById('prodAtivo').value = String(p.ativo !== false);
+    if (p.img) { setImgPreview('prodImgPreview','prodImgIcon','prodImgPrompt', p.img); prodImgData = p.img; }
+    else { clearImgPreview('prodImgPreview','prodImgIcon','prodImgPrompt'); }
+  } else {
+    document.getElementById('prodModalTitle').textContent = 'Novo Produto';
+    document.getElementById('prodEditId').value = '';
+    ['prodName','prodDesc','prodPrice','prodCat'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('prodAtivo').value = 'true';
+    clearImgPreview('prodImgPreview','prodImgIcon','prodImgPrompt');
+  }
+}
+function closeProdModal() { document.getElementById('prodModal').classList.add('hidden'); }
+async function handleProdImgUpload(event) {
+  const file = event.target.files[0]; if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { document.getElementById('prodImgAlert').innerHTML = '<div class="alert alert-err">Imagem muito grande. Máximo 2MB.</div>'; return; }
+  document.getElementById('prodImgAlert').innerHTML = '';
+  prodImgData = await Utils.fileToBase64(file);
+  setImgPreview('prodImgPreview','prodImgIcon','prodImgPrompt', prodImgData);
+}
+function saveProd() {
+  const name = document.getElementById('prodName').value.trim();
+  const price = parseFloat(document.getElementById('prodPrice').value);
+  const cat = document.getElementById('prodCat').value.trim();
+  if (!name || !price || !cat) { alert('Preencha nome, preço e categoria.'); return; }
+  const prods = DB.getProducts();
+  const editId = document.getElementById('prodEditId').value;
+  if (editId) {
+    const p = prods.find(x => x.id === editId);
+    if (p) { p.name = name; p.desc = document.getElementById('prodDesc').value.trim(); p.price = price; p.category = cat; p.ativo = document.getElementById('prodAtivo').value === 'true'; if (prodImgData) p.img = prodImgData; }
+  } else {
+    prods.push({ id: Utils.uid(), name, desc: document.getElementById('prodDesc').value.trim(), price, category: cat, img: prodImgData || '', ativo: true });
+  }
+  DB.saveProducts(prods);
+  closeProdModal();
+  renderProds();
+}
+function toggleProd(id) {
+  const prods = DB.getProducts();
+  const p = prods.find(x => x.id === id);
+  if (p) { p.ativo = !p.ativo; DB.saveProducts(prods); renderProds(); }
+}
+function deleteProd(id) {
+  if (!confirm('Remover este produto permanentemente?')) return;
+  DB.saveProducts(DB.getProducts().filter(p => p.id !== id));
+  renderProds();
+}
+
+// ══ REGIÕES ══
+function renderRegions() {
+  const regions = DB.getRegions();
+  const el = document.getElementById('regionsBody');
+  el.innerHTML = regions.length ? regions.map(r => `<div class="region-row">
+    <div style="width:10px;height:10px;border-radius:50%;background:${r.ativo?'var(--green)':'var(--bdr2)'};flex-shrink:0"></div>
+    <div class="region-name">${r.name}</div>
+    <div class="region-frete">${r.frete > 0 ? Utils.money(r.frete) : 'Grátis'}</div>
+    <div style="display:flex;gap:6px">
+      <button class="icon-btn edit" onclick="openRegionModal('${r.id}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="icon-btn del" onclick="deleteRegion('${r.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+    </div>
+  </div>`).join('') : '<p style="padding:20px;text-align:center;color:var(--txt3)">Nenhuma região cadastrada ainda.</p>';
+}
+function openRegionModal(id) {
+  document.getElementById('regionModal').classList.remove('hidden');
+  if (id) {
+    const r = DB.getRegions().find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('regionModalTitle').textContent = 'Editar Região';
+    document.getElementById('regEditId').value = id;
+    document.getElementById('regName').value = r.name;
+    document.getElementById('regFrete').value = r.frete;
+    document.getElementById('regAtivo').value = String(r.ativo);
+  } else {
+    document.getElementById('regionModalTitle').textContent = 'Nova Região';
+    document.getElementById('regEditId').value = '';
+    document.getElementById('regName').value = '';
+    document.getElementById('regFrete').value = '';
+    document.getElementById('regAtivo').value = 'true';
+  }
+}
+function closeRegionModal() { document.getElementById('regionModal').classList.add('hidden'); }
+function saveRegion() {
+  const name = document.getElementById('regName').value.trim();
+  if (!name) { alert('Informe o nome da região.'); return; }
+  const frete = parseFloat(document.getElementById('regFrete').value) || 0;
+  const ativo = document.getElementById('regAtivo').value === 'true';
+  const regions = DB.getRegions();
+  const editId = document.getElementById('regEditId').value;
+  if (editId) {
+    const r = regions.find(x => x.id === editId);
+    if (r) { r.name = name; r.frete = frete; r.ativo = ativo; }
+  } else {
+    regions.push({ id: Utils.uid(), name, frete, ativo });
+  }
+  DB.saveRegions(regions);
+  closeRegionModal();
+  renderRegions();
+}
+function deleteRegion(id) {
+  if (!confirm('Remover esta região?')) return;
+  DB.saveRegions(DB.getRegions().filter(r => r.id !== id));
+  renderRegions();
+}
+
+// ══ CONFIG ══
+function renderConfig() {
+  const cfg = DB.getConfig();
+  document.getElementById('cfgNome').value = cfg.nome || '';
+  document.getElementById('cfgSlogan').value = cfg.slogan || '';
+  document.getElementById('cfgEndereco').value = cfg.endereco || '';
+  document.getElementById('cfgWhats').value = cfg.whatsapp || '';
+  const h = cfg.horarios || {};
+  document.getElementById('cfgHorSemana').value = h.semana || '';
+  document.getElementById('cfgHorSab').value = h.sabado || '';
+  document.getElementById('cfgHorDom').value = h.domingo || '';
+  // Logo preview
+  if (cfg.logoData) setImgPreview('logoPreview','logoIcon','logoPrompt', cfg.logoData);
+  if (cfg.coverData) setImgPreview('coverPreview','coverIcon','coverPrompt', cfg.coverData);
+  // Delivery
+  currentDelivery = cfg.delivery !== false;
+  setCfgDelivery(currentDelivery);
+  // Pagamentos
+  const pays = cfg.pagamentos || ['dinheiro','pix','cartao'];
+  document.getElementById('payDinheiro').checked = pays.includes('dinheiro');
+  document.getElementById('payPix').checked = pays.includes('pix');
+  document.getElementById('payCartao').checked = pays.includes('cartao');
+  // Schedule
+  const ao = cfg.scheduleOpen || {};
+  const ac = cfg.scheduleClose || {};
+  scheduleState = {};
+  DAYS.forEach(d => { scheduleState[d] = { open: ao[d]||null, close: ac[d]||null }; });
+  renderScheduleRows();
+}
+
+function renderScheduleRows() {
+  const el = document.getElementById('scheduleRows');
+  el.innerHTML = DAYS.map(d => {
+    const s = scheduleState[d];
+    const isOn = s.open !== null;
+    return `<div class="schedule-row">
+      <div class="schedule-day">${DAYNAMES[d]}</div>
+      <div class="schedule-toggle" onclick="toggleDay('${d}')">
+        <div class="toggle-switch ${isOn?'on':''}" id="sw-${d}"></div>
+        <span style="font-size:13px;color:var(--txt3)">${isOn?'Aberto':'Fechado'}</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" style="padding:7px 10px;font-size:13px" type="time" id="open-${d}" value="${s.open||'10:00'}" ${isOn?'':'disabled'} onchange="scheduleState['${d}'].open=this.value">
+        <span style="display:flex;align-items:center;color:var(--txt3);font-size:12px">até</span>
+        <input class="form-input" style="padding:7px 10px;font-size:13px" type="time" id="close-${d}" value="${s.close||'22:00'}" ${isOn?'':'disabled'} onchange="scheduleState['${d}'].close=this.value">
+      </div>
+      <div></div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDay(d) {
+  const s = scheduleState[d];
+  if (s.open !== null) { s._open = s.open; s._close = s.close; s.open = null; s.close = null; }
+  else { s.open = s._open || '10:00'; s.close = s._close || '22:00'; }
+  renderScheduleRows();
+}
+
+function setCfgDelivery(val) {
+  currentDelivery = val;
+  document.getElementById('btnDelivOn').className = 'btn-sm ' + (val ? 'btn-pr' : 'btn-ghost');
+  document.getElementById('btnDelivOff').className = 'btn-sm ' + (!val ? 'btn-pr' : 'btn-ghost');
+}
+
+let logoData = null, coverData = null;
+async function handleLogoUpload(event) {
+  const file = event.target.files[0]; if (!file) return;
+  if (file.size > 2*1024*1024) { alert('Imagem muito grande. Máximo 2MB.'); return; }
+  logoData = await Utils.fileToBase64(file);
+  setImgPreview('logoPreview','logoIcon','logoPrompt', logoData);
+}
+async function handleCoverUpload(event) {
+  const file = event.target.files[0]; if (!file) return;
+  if (file.size > 3*1024*1024) { alert('Imagem muito grande. Máximo 3MB.'); return; }
+  coverData = await Utils.fileToBase64(file);
+  setImgPreview('coverPreview','coverIcon','coverPrompt', coverData);
+}
+function setImgPreview(imgId, iconId, promptId, src) {
+  const img = document.getElementById(imgId);
+  if (!img) return;
+  img.src = src; img.classList.remove('hidden');
+  const icon = document.getElementById(iconId); if (icon) icon.style.display = 'none';
+  const prompt = document.getElementById(promptId); if (prompt) prompt.style.display = 'none';
+}
+function clearImgPreview(imgId, iconId, promptId) {
+  const img = document.getElementById(imgId); if (img) { img.src = ''; img.classList.add('hidden'); }
+  const icon = document.getElementById(iconId); if (icon) icon.style.display = '';
+  const prompt = document.getElementById(promptId); if (prompt) prompt.style.display = '';
+}
+
+function saveAllConfig() {
+  const nova = document.getElementById('cfgNovaSenha').value;
+  const conf = document.getElementById('cfgConfSenha').value;
+  if (nova && nova !== conf) { document.getElementById('cfgAlert').innerHTML = '<div class="alert alert-err">As senhas não coincidem.</div>'; return; }
+  if (nova && nova.length < 4) { document.getElementById('cfgAlert').innerHTML = '<div class="alert alert-err">Senha muito curta (mínimo 4 caracteres).</div>'; return; }
+
+  const pays = [];
+  if (document.getElementById('payDinheiro').checked) pays.push('dinheiro');
+  if (document.getElementById('payPix').checked) pays.push('pix');
+  if (document.getElementById('payCartao').checked) pays.push('cartao');
+
+  const scheduleOpen = {}, scheduleClose = {};
+  DAYS.forEach(d => {
+    scheduleOpen[d] = scheduleState[d].open || null;
+    scheduleClose[d] = scheduleState[d].close || null;
+  });
+
+  const cfg = DB.getConfig();
+  cfg.nome = document.getElementById('cfgNome').value.trim();
+  cfg.slogan = document.getElementById('cfgSlogan').value.trim();
+  cfg.endereco = document.getElementById('cfgEndereco').value.trim();
+  cfg.whatsapp = document.getElementById('cfgWhats').value.trim();
+  cfg.horarios = { semana: document.getElementById('cfgHorSemana').value, sabado: document.getElementById('cfgHorSab').value, domingo: document.getElementById('cfgHorDom').value };
+  cfg.scheduleOpen = scheduleOpen;
+  cfg.scheduleClose = scheduleClose;
+  cfg.delivery = currentDelivery;
+  cfg.pagamentos = pays;
+  if (logoData) cfg.logoData = logoData;
+  if (coverData) cfg.coverData = coverData;
+  if (nova) cfg.adminPass = nova;
+
+  DB.saveConfig(cfg);
+  loadSidebarLogo();
+  document.getElementById('cfgAlert').innerHTML = '<div class="alert alert-ok">✅ Configurações salvas com sucesso!</div>';
+  document.getElementById('cfgNovaSenha').value = '';
+  document.getElementById('cfgConfSenha').value = '';
+  setTimeout(() => document.getElementById('cfgAlert').innerHTML = '', 3000);
+}
+</script>
+</body>
+</html>
