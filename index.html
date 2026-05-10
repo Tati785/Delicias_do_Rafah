@@ -509,6 +509,12 @@ input[type=number]::-webkit-inner-spin-button{opacity:1}
   <button class="pwa-close-btn" onclick="document.getElementById('pwaBanner').classList.add('hidden')">&times;</button>
 </div>
 
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+
 <script src="dados.js"></script>
 <script>
 // ══ STATE ══
