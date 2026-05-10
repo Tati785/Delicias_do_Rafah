@@ -625,7 +625,7 @@ const DAYNAMES = { seg:'Segunda',ter:'Terça',qua:'Quarta',qui:'Quinta',sex:'Sex
 function doAdminLogin() {
   const pass = document.getElementById('passInput').value;
   const cfg = DB.getConfig();
-  if (pass === (cfg.adminPass || 'admin123')) {
+  if (pass === (cfg.adminPass || 'admin')) {
     document.getElementById('loginWall').style.display = 'none';
     document.getElementById('appLayout').style.display = 'flex';
     initAdmin();
