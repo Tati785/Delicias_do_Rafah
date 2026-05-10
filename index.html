@@ -945,6 +945,23 @@ window.addEventListener('beforeinstallprompt', e => {
   document.getElementById('pwaBanner').classList.remove('hidden');
 });
 
+function installPWA() {
+  if (deferredPrompt) {
+    // Se o Chrome já disparou o evento, usa ele
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') {
+        document.getElementById('pwaBanner').classList.add('hidden');
+        localStorage.setItem('pwaDismissed', '1');
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    // Se não, mostra instruções manuais
+    alert('Para instalar:\n1. Toque nos 3 pontinhos do Chrome\n2. Selecione "Adicionar à tela inicial"\n3. Confirme!');
+  }
+}
+
 // ══ INIT ══
 renderHome();
 updateBadge();
