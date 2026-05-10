@@ -503,12 +503,11 @@ input[type=number]::-webkit-inner-spin-button{opacity:1}
 </nav>
 
 <!-- ══ PWA BANNER ══ -->
-<div class="pwa-bar hidden" id="pwaBanner">
-  <p>Adicione à tela inicial para acesso rápido!</p>
+<div class="pwa-bar" id="pwaBanner">
+  <p>📱 Instale nosso app para acesso rápido!</p>
   <button class="pwa-install" onclick="installPWA()">Instalar</button>
-  <button class="pwa-close-btn" onclick="document.getElementById('pwaBanner').classList.add('hidden')">&times;</button>
+  <button class="pwa-close-btn" onclick="document.getElementById('pwaBanner').classList.add('hidden')">×</button>
 </div>
-
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
@@ -939,12 +938,12 @@ function doLogout() { DB.clearSession(); document.getElementById('navLoginLabel'
 
 // ══ PWA ══
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault(); deferredPrompt = e;
-  if (!localStorage.getItem('pwaDismissed')) document.getElementById('pwaBanner').classList.remove('hidden');
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Mostra o botão de instalar sempre que capturar o evento
+  document.getElementById('pwaBanner').classList.remove('hidden');
 });
-function installPWA() {
-  if (deferredPrompt) { deferredPrompt.prompt(); document.getElementById('pwaBanner').classList.add('hidden'); localStorage.setItem('pwaDismissed','1'); }
-}
 
 // ══ INIT ══
 renderHome();
